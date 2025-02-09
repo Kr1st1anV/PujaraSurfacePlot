@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>PujaraSurfacePlot</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    /* Make the body and HTML fill the entire screen */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* Prevent scrolling */
+    }
+
+    /* The div for the plot takes up the entire canvas */
+    #controls {
+      padding: 10px;
+      background-color: #f4f4f4;
+      border-top: 1px solid #ddd;
+      width: 100%;
+      height: 20%;
+    }
+
+    #plot {
+      padding_left: 25%;
+      width: 100%;
+      height: 90%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="plot"></div>
+  <div id="controls">
+    <input type="file" id="fileInput" accept=".csv">
+    <button id="uploadButton">Upload and Plot</button>
+  </div>
+  <script>
+    const uploadButton = document.getElementById('uploadButton');
+    const fileInput = document.getElementById('fileInput');
+
+    // Function to parse the CSV
+    function parseCSV(csvText) {
+      // Split rows and create a 2D array of z values
+      const rows = csvText.trim().split("\n").map(row => row.split(",").map(parseFloat));
+      return rows;
+    }
+
+    // Function to generate the plot
+    function generatePlot(zData) {
+      // Create x and y values
+      const x = Array.from({length: zData[0].length}, (_, i) => i); // x values are the column indices
+      const y = Array.from({length: zData.length}, (_, i) => i);   // y values are the row indices
+
+      const surface = {
+        z: zData,
+        x: x,
+        y: y,
+        type: 'surface',
+        colorscale: 'Viridis'
+      };
+
+      const layout = {
+        title: "3D Surface Plot from CSV",
+        scene: {
+          xaxis: {title: 'X-axis'},
+          yaxis: {title: 'Y-axis'},
+          zaxis: {title: 'Electric Potential (V)'},
+          title: {title: 'Electric Potential Surface Plot'}
+        },
+        margin: {l: 0, r: 0, t: 0, b: 0}
+      };
+
+      Plotly.newPlot('plot', [surface], layout, {responsive: true});
+    }
+
+    // Event listener for the upload button
+    uploadButton.addEventListener('click', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select a CSV file to upload!");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const csvText = event.target.result;
+        const zData = parseCSV(csvText); // Parse CSV into a 2D array of z values
+        generatePlot(zData); // Generate the plot
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+
+</html>
