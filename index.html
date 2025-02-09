@@ -6,29 +6,25 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     /* Make the body and HTML fill the entire screen */
-    html,
     body {
       margin: 0;
-      padding: 0;
+      overflow: hidden;
+    }
+    #plot {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      /* Prevent scrolling */
+      background-color: white;
+      z-index: 9999; /* Ensures it is above all other content */
     }
-
-    /* The div for the plot takes up the entire canvas */
     #controls {
-      padding: 10px;
-      background-color: #f4f4f4;
-      border-top: 1px solid #ddd;
-      width: 100%;
-      height: 20%;
-    }
-
-    #plot {
-      padding_left: 25%;
-      width: 100%;
-      height: 90%;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10000; /* Stays above the plot container */
     }
   </style>
 </head>
@@ -40,6 +36,8 @@
     <button id="uploadButton">Upload and Plot</button>
   </div>
   <script>
+    const plotContainer = document.getElementById('plot');
+    const showPlotButton = document.getElementById('controls');
     const uploadButton = document.getElementById('uploadButton');
     const fileInput = document.getElementById('fileInput');
 
@@ -61,7 +59,8 @@
         x: x,
         y: y,
         type: 'surface',
-        colorscale: 'Viridis'
+        colorscale: 'Viridis',
+        autosize: true
       };
 
       const layout = {
@@ -75,7 +74,16 @@
         margin: {l: 0, r: 0, t: 0, b: 0}
       };
 
-      Plotly.newPlot('plot', [surface], layout, {responsive: true});
+      Plotly.newPlot('plot', [surface], layout, {responsive: true})
+      
+      Plotly.relayout('plot', {
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+
+      // Optional: Hide the button once the plot is fullscreen
+      showPlotButton.style.display = 'none';
+      plotContainer.style.display = 'block';
     }
 
     // Event listener for the upload button
@@ -93,6 +101,16 @@
         generatePlot(zData); // Generate the plot
       };
       reader.readAsText(file);
+      
+    });
+
+    window.addEventListener('resize', () => {
+      if (plotContainer.style.display === 'block') {
+        Plotly.relayout('plot', {
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      }
     });
   </script>
 </body>
